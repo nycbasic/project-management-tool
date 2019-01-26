@@ -1,0 +1,31 @@
+{
+  "name": "auth-server-template",
+  "version": "1.0.0",
+  "description": "Authentication Server Template/Server Template",
+  "main": "index.js",
+  "scripts": {
+    "client-install": "npm i --prefix ../client",
+    "start": "node index.js",
+    "server": "nodemon index.js",
+    "client": "npm start --prefix ../client",
+    "dev": "concurrently \"npm run server\" \"npm run client\""
+  },
+  "author": "spoon",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^2.6.1",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.18.3",
+    "concurrently": "^4.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^6.2.0",
+    "express": "^4.16.4",
+    "gravatar": "^1.6.0",
+    "jsonwebtoken": "^8.3.0",
+    "mongoose": "^5.3.8",
+    "nodemailer": "^4.7.0",
+    "passport": "^0.4.0",
+    "passport-jwt": "^4.0.0",
+    "validator": "^10.8.0"
+  }
+}
