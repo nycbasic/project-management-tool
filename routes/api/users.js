@@ -12,10 +12,12 @@ const express = require("express"),
 const Users = require("../../models/Users");
 
 // Validation
-const validateSignUpInput = require("../../validation/signup");
-const validateLoginInput = require("../../validation/login");
-const validateResetInput = require("../../validation/reset");
-const validatePasswordResetInput = require("../../validation/reset-password");
+const {
+  validateSignUpInput,
+  validateLoginInput,
+  validateResetInput,
+  validatePasswordResetInput
+} = require("../../validation/auth");
 
 // Configuration
 
@@ -59,7 +61,8 @@ router.post("/signup", (req, res) => {
         email,
         avatar,
         password: {
-          current: password
+          current: password,
+          status: true
         }
       });
 
@@ -225,6 +228,7 @@ router.post("/login", (req, res) => {
         } else {
           // Logs user in and clear specific fields related to user tries
           user.password.resetted = false;
+          user.password.status = true;
           passwordfailCount = 0;
           user.save();
           //   Assign JWT
@@ -445,6 +449,14 @@ router.delete("/:id", auth, (req, res) => {
       msg: "You have been removed!"
     });
   });
+});
+
+router.get("/status", auth, (req, res) => {
+  if (req.user) {
+    return res.status(200).json({
+      success: true
+    });
+  }
 });
 
 module.exports = router;

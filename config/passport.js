@@ -15,13 +15,13 @@ module.exports = passport => {
       Users.findById(payload.id)
         .then(user => {
           if (user) {
-            done(null, user);
+            return done(null, user);
           } else {
-            done(null, false);
+            return done(null, false);
           }
         })
         .catch(err => {
-          console.log(err);
+          return err;
         });
     })
   );

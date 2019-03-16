@@ -19,7 +19,11 @@ const userSchema = new Schema({
     },
     previous: [],
     count: { type: Number },
-    resetted: { type: Boolean }
+    resetted: { type: Boolean },
+    status: {
+      type: Boolean,
+      required: true
+    }
   },
   avatar: {
     type: String

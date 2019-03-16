@@ -12,10 +12,7 @@ const PORT = process.env.PORT;
 
 // Database
 mongoose
-  .connect(
-    db,
-    { useNewUrlParser: true }
-  )
+  .connect(db, { useNewUrlParser: true })
   .then(() => {
     console.log("mongoDB-Atlas Connected!");
   })
@@ -24,7 +21,8 @@ mongoose
   });
 
 // API - Routes
-users = require("./routes/api/users");
+const users = require("./routes/api/users");
+const todo = require("./routes/api/todos");
 
 // Passport - Middleware Authentication
 app.use(passport.initialize());
@@ -36,6 +34,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 //Routes
+app.use("/api/todos", todo);
 app.use("/api/users", users);
 
 app.listen(PORT, () => {
