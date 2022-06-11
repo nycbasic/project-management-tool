@@ -5,11 +5,12 @@ const express = require("express"),
 // Helper function & Todo Model Schema
 const findItem = require("../../helpers/index-value");
 const Todo = require("../../models/Todos");
+const { home, getAllProjects } = require("../../helpers/projects");
 
 // Validation Inputs
 const {
   validateProjectNameInput,
-  validateTodoInputs
+  validateTodoInputs,
 } = require("../../validation/todos");
 
 // Validation check for URL parameters
@@ -21,32 +22,12 @@ const auth = passport.authenticate("jwt", { session: false });
 // Route: GET /
 // Desc: A route to check if the api is working
 // Access: Public
-router.get("/", (req, res) => {
-  return res.status(200).json({
-    msg: "Connected to todo api!"
-  });
-});
+router.get("/", home);
 
 // Route: GET /all
 // Desc: Loads all projects in database
 // Access: Private
-router.get("/all", auth, (req, res) => {
-  const { user } = req;
-  if (user) {
-    Todo.findOne({ user: user.id })
-      .then(user => {
-        const { projects } = user;
-        const { alert, noAlert } = validateRandomAlerts(projects);
-        if (!noAlert) {
-          return res.status(400).json(alert);
-        }
-        return res.status(200).json(projects);
-      })
-      .catch(err => {
-        return res.status(400).json(err);
-      });
-  }
-});
+router.get("/all", auth, getAllProjects);
 
 /* Project REST API - Start */
 
@@ -58,7 +39,7 @@ router.post("/project", auth, (req, res) => {
   const { name } = req.body;
   const { id } = req.user;
   Todo.findOne({ user: id })
-    .then(user => {
+    .then((user) => {
       if (!isValid) {
         return res.status(400).json(errors);
       }
@@ -69,28 +50,28 @@ router.post("/project", auth, (req, res) => {
           projects: [
             {
               name,
-              todos: []
-            }
+              todos: [],
+            },
           ],
-          completed: false
+          completed: false,
         });
-        newProject.save().then(projects => {
+        newProject.save().then((projects) => {
           return res.json(projects);
         });
       } else {
         const newProject = {
           name,
           todos: [],
-          completed: false
+          completed: false,
         };
 
         user.projects.push(newProject);
-        user.save().then(user => {
+        user.save().then((user) => {
           return res.status(200).json(user.projects);
         });
       }
     })
-    .catch(err => {
+    .catch((err) => {
       if (err) {
         return res.status(400).json({ error: "Something went wrong!" });
       }
@@ -102,7 +83,7 @@ router.post("/project", auth, (req, res) => {
 // Access: Private
 router.put("/project/:project_id", auth, (req, res) => {
   Todo.findOne({ user: req.user.id })
-    .then(user => {
+    .then((user) => {
       const { projects } = user;
       const { project_id } = req.params;
       const { current_item, current_index } = findItem(
@@ -127,7 +108,7 @@ router.put("/project/:project_id", auth, (req, res) => {
         return res.status(200).json(projects[current_index]);
       });
     })
-    .catch(err => {
+    .catch((err) => {
       if (err) {
         return res.status(400).json({ error: "Something went wrong!" });
       }
@@ -139,7 +120,7 @@ router.put("/project/:project_id", auth, (req, res) => {
 // Access: Private
 router.put("/project/completed/:project_id", auth, (req, res) => {
   Todo.findOne({ user: req.user.id })
-    .then(user => {
+    .then((user) => {
       const { projects } = user;
       const { project_id } = req.params;
       const { current_item, current_index } = findItem(
@@ -157,7 +138,7 @@ router.put("/project/completed/:project_id", auth, (req, res) => {
         return res.status(200).json(projects[current_index]);
       });
     })
-    .catch(err => {
+    .catch((err) => {
       if (err) {
         return res.status(400).json({ error: "Something went wrong!" });
       }
@@ -170,7 +151,7 @@ router.put("/project/completed/:project_id", auth, (req, res) => {
 router.delete("/project/:project_id", auth, (req, res) => {
   const { id } = req.user;
   Todo.findOne({ user: id })
-    .then(user => {
+    .then((user) => {
       const { projects } = user;
       const { project_id } = req.params;
       const { current_item, current_index } = findItem(
@@ -191,7 +172,7 @@ router.delete("/project/:project_id", auth, (req, res) => {
           .json(projects.length < 1 ? { msg: "No data to display" } : projects);
       });
     })
-    .catch(err => {
+    .catch((err) => {
       if (err) {
         return res.status(400).json({ error: "Something went wrong!" });
       }
@@ -204,21 +185,21 @@ router.delete("/project/:project_id", auth, (req, res) => {
 router.delete("/project", auth, (req, res) => {
   const { id } = req.user;
   Todo.findOne({ user: id })
-    .then(user => {
+    .then((user) => {
       const { projects } = user;
       const { noAlert, alert } = validateRandomAlerts(projects);
       if (!noAlert) {
         return res.status(400).json(alert);
       }
       user.projects = [];
-      user.save().then(user => {
+      user.save().then((user) => {
         const { projects } = user;
         return res
           .status(200)
           .json(projects.length < 1 ? { msg: "No data to display" } : projects);
       });
     })
-    .catch(err => {
+    .catch((err) => {
       if (err) {
         return res.status(400).json({ error: "Something went wrong!" });
       }
@@ -234,7 +215,7 @@ router.delete("/project", auth, (req, res) => {
 // Access: Private
 router.post("/todo/:project_id", auth, (req, res) => {
   Todo.findOne({ user: req.user.id })
-    .then(user => {
+    .then((user) => {
       const { projects } = user;
       const { project_id } = req.params;
       const { current_item, current_index } = findItem(
@@ -257,7 +238,7 @@ router.post("/todo/:project_id", auth, (req, res) => {
       const newTodo = {
         title,
         text,
-        completed: false
+        completed: false,
       };
 
       current_item.todos.push(newTodo);
@@ -265,7 +246,7 @@ router.post("/todo/:project_id", auth, (req, res) => {
         return res.status(200).json(projects[current_index].todos);
       });
     })
-    .catch(err => {
+    .catch((err) => {
       if (err) {
         return res.status(400).json({ error: "Something went wrong!" });
       }
@@ -277,7 +258,7 @@ router.post("/todo/:project_id", auth, (req, res) => {
 // Access: Private
 router.put("/todo/:project_id/:todo_id", auth, (req, res) => {
   Todo.findOne({ user: req.user.id })
-    .then(user => {
+    .then((user) => {
       const { projects } = user;
       const { project_id, todo_id } = req.params;
       const { title, text } = req.body;
@@ -303,7 +284,7 @@ router.put("/todo/:project_id/:todo_id", auth, (req, res) => {
         return res.json(projects[first_index].todos[second_index]);
       });
     })
-    .catch(err => {
+    .catch((err) => {
       if (err) {
         return res.status(400).json({ msg: "Something went wrong!" });
       }
@@ -315,7 +296,7 @@ router.put("/todo/:project_id/:todo_id", auth, (req, res) => {
 // Access: Private
 router.put("/todo/completed/:project_id/:todo_id", auth, (req, res) => {
   Todo.findOne({ user: req.user.id })
-    .then(user => {
+    .then((user) => {
       const { projects } = user;
       const { project_id, todo_id } = req.params;
       const { current_item, first_index, second_index } = findItem(
@@ -335,7 +316,7 @@ router.put("/todo/completed/:project_id/:todo_id", auth, (req, res) => {
         return res.status(200).json(projects[first_index].todos[second_index]);
       });
     })
-    .catch(err => {
+    .catch((err) => {
       if (err) {
         return res.status(400).json({ msg: "Something went wrong!" });
       }
@@ -347,7 +328,7 @@ router.put("/todo/completed/:project_id/:todo_id", auth, (req, res) => {
 // Access: Private
 router.delete("/todo/:project_id/:todo_id", auth, (req, res) => {
   Todo.findOne({ user: req.user.id })
-    .then(user => {
+    .then((user) => {
       const { projects } = user;
       const { project_id, todo_id } = req.params;
       const { current_item, first_index, second_index } = findItem(
@@ -370,7 +351,7 @@ router.delete("/todo/:project_id/:todo_id", auth, (req, res) => {
         );
       });
     })
-    .catch(err => {
+    .catch((err) => {
       if (err) {
         return res.status(400).json({ msg: "Something went wrong!" });
       }
@@ -381,7 +362,7 @@ router.delete("/todo/:project_id/:todo_id", auth, (req, res) => {
 // Desc: Deletes all of the todos
 // Access:
 router.delete("/todo/:project_id", auth, (req, res) => {
-  Todo.findOne({ user: req.user.id }).then(user => {
+  Todo.findOne({ user: req.user.id }).then((user) => {
     const { projects } = user;
     const { project_id } = req.params;
     const { current_item, current_index } = findItem(
@@ -397,7 +378,7 @@ router.delete("/todo/:project_id", auth, (req, res) => {
     }
 
     current_item.todos = [];
-    user.save().then(user => {
+    user.save().then((user) => {
       return res
         .status(200)
         .json(

@@ -16,13 +16,13 @@ mongoose
   .then(() => {
     console.log("mongoDB-Atlas Connected!");
   })
-  .catch(err => {
+  .catch((err) => {
     console.log(err);
   });
 
-// API - Routes
-const users = require("./routes/api/users");
-const todo = require("./routes/api/todos");
+// API Routes
+const Users = require("./routes/api/users");
+const Todos = require("./routes/api/todos");
 
 // Passport - Middleware Authentication
 app.use(passport.initialize());
@@ -33,9 +33,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
 
-//Routes
-app.use("/api/todos", todo);
-app.use("/api/users", users);
+// End Points
+app.use("/api/projects", Todos);
+app.use("/api/users", Users);
 
 app.listen(PORT, () => {
   console.log(`Server running on: ${PORT}`);

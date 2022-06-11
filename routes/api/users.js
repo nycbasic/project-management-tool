@@ -11,12 +11,15 @@ const express = require("express"),
 // Users Model
 const Users = require("../../models/Users");
 
+// Users Helper Functions for routes
+const { home, signUp } = require("../../helpers/users");
+
 // Validation
 const {
   validateSignUpInput,
   validateLoginInput,
   validateResetInput,
-  validatePasswordResetInput
+  validatePasswordResetInput,
 } = require("../../validation/auth");
 
 // Configuration
@@ -30,90 +33,12 @@ let passwordfailCount = 0;
 // Route: GET
 // Description: Test route for protected routes
 // Access: PUBLIC
-router.get("/", (req, res) => {
-  return res.json({
-    message: "API is currently running!"
-  });
-});
+router.get("/", home);
 
 // Route: POST /api/users/signup
 // Description: User sign-up route
 // Access: PUBLIC
-router.post("/signup", (req, res) => {
-  const { errors, isValid } = validateSignUpInput(req.body);
-
-  //   Validation Check
-  if (!isValid) {
-    return res.status(400).json(errors);
-  }
-
-  Users.findOne({ email: req.body.email }).then(user => {
-    if (!user) {
-      const { fullName, email, password } = req.body;
-      const avatar = gravatar.url(email, {
-        size: "200",
-        rating: "pg",
-        default: "mm"
-      });
-
-      const newUser = new Users({
-        fullName,
-        email,
-        avatar,
-        password: {
-          current: password,
-          status: true
-        }
-      });
-
-      bcrypt.genSalt(10, (err, salt) => {
-        if (err) {
-          return res.send(err);
-        }
-        bcrypt.hash(newUser.password.current, salt, (err, hash) => {
-          if (err) {
-            return res.send(err);
-          }
-          passwordfailCount = 0;
-          newUser.password.current = hash;
-          newUser.password.previous.push(hash);
-
-          newUser
-            .save()
-            .then(user => {
-              const { id, fullName, avatar } = user;
-              const payload = {
-                id,
-                fullName,
-                avatar
-              };
-              jwt.sign(
-                payload,
-                process.env.SECRET,
-                { expiresIn: 3600 },
-                (err, token) => {
-                  if (err) {
-                    return res.status(400).send(err.response.data);
-                  }
-                  return res.json({
-                    token: `Bearer ${token}`,
-                    status: 200
-                  });
-                }
-              );
-            })
-            .catch(err => {
-              console.log(err);
-              return res.json(err.respones.data);
-            });
-        });
-      });
-    } else {
-      errors.email = "User already exists!";
-      return res.status(400).json(errors);
-    }
-  });
-});
+router.post("/signup", signUp);
 
 // Route: POST /api/users/login
 // Description: User log-in route
@@ -126,18 +51,18 @@ router.post("/login", (req, res) => {
     return res.status(400).json(errors);
   }
 
-  Users.findOne({ email }).then(user => {
+  Users.findOne({ email }).then((user) => {
     // Checks if the email is already registered
     if (!user) {
       errors.email = "Email not found or User does not exist!";
       return res.status(400).json(errors);
     } else {
       // Checks if the password matches
-      bcrypt.compare(password, user.password.current).then(success => {
+      bcrypt.compare(password, user.password.current).then((success) => {
         // Checks to see if a reset email has already been sent
         if (user.password.resetted) {
           res.json({
-            msg: "You must reset your password!"
+            msg: "You must reset your password!",
           });
           return false;
         } else if (!success) {
@@ -158,7 +83,7 @@ router.post("/login", (req, res) => {
 
             // Email is sent with instructions on how to reset password
             async.waterfall([
-              done => {
+              (done) => {
                 crypto.randomBytes(20, (err, buf) => {
                   const token = buf.toString("hex");
                   done(err, token);
@@ -166,7 +91,7 @@ router.post("/login", (req, res) => {
               },
               (token, done) => {
                 Users.findOne({ email })
-                  .then(user => {
+                  .then((user) => {
                     if (!user) {
                       errors.email =
                         "No account with that email address exists!";
@@ -180,7 +105,7 @@ router.post("/login", (req, res) => {
                       done(err, token, user);
                     });
                   })
-                  .catch(err => {
+                  .catch((err) => {
                     errors.email =
                       "Something went wrong! Please contact your administrator!";
                     return res.status(400).json(errors);
@@ -191,11 +116,11 @@ router.post("/login", (req, res) => {
                   service: process.env.MAIL_SERVICE,
                   auth: {
                     user: process.env.MAIL_USERNAME,
-                    pass: process.env.MAIL_PASSWORD
+                    pass: process.env.MAIL_PASSWORD,
                   },
                   tls: {
-                    rejectUnauthorized: false
-                  }
+                    rejectUnauthorized: false,
+                  },
                 });
 
                 const email = {
@@ -205,23 +130,21 @@ router.post("/login", (req, res) => {
                   text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n'
                   'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
                   'https://nycbasic.github.io/mini-auth/#/reset/${token}\n\n'
-                  'If you did not request this, please ignore this email and your password will remain unchanged.\n`
+                  'If you did not request this, please ignore this email and your password will remain unchanged.\n`,
                 };
 
-                transporter.sendMail(email, err => {
+                transporter.sendMail(email, (err) => {
                   if (err) {
                     console.log(err);
                   }
                   return done(
                     err,
                     res.status(200).json({
-                      msg: `Email has been sent to ${
-                        user.email
-                      } for your password reset`
+                      msg: `Email has been sent to ${user.email} for your password reset`,
                     })
                   );
                 });
-              }
+              },
             ]);
           }
           res.status(400).json(errors);
@@ -236,7 +159,7 @@ router.post("/login", (req, res) => {
           const payload = {
             id,
             fullName,
-            avatar
+            avatar,
           };
 
           jwt.sign(
@@ -249,7 +172,7 @@ router.post("/login", (req, res) => {
               }
               return res.json({
                 token: `Bearer ${token}`,
-                status: 200
+                status: 200,
               });
             }
           );
@@ -272,7 +195,7 @@ router.post("/forgot", (req, res) => {
   }
 
   async.waterfall([
-    done => {
+    (done) => {
       crypto.randomBytes(20, (err, buf) => {
         const token = buf.toString("hex");
         done(err, token);
@@ -280,7 +203,7 @@ router.post("/forgot", (req, res) => {
     },
     (token, done) => {
       Users.findOne({ email })
-        .then(user => {
+        .then((user) => {
           if (!user) {
             errors.email = "No account with that email address exists!";
             return res.status(400).json(errors);
@@ -294,7 +217,7 @@ router.post("/forgot", (req, res) => {
             done(err, token, user);
           });
         })
-        .catch(err => {
+        .catch((err) => {
           errors.email =
             "Something went wrong! Please contact your administrator!";
           return res.status(400).json(errors);
@@ -305,11 +228,11 @@ router.post("/forgot", (req, res) => {
         service: process.env.MAIL_SERVICE,
         auth: {
           user: process.env.MAIL_USERNAME,
-          pass: process.env.MAIL_PASSWORD
+          pass: process.env.MAIL_PASSWORD,
         },
         tls: {
-          rejectUnauthorized: false
-        }
+          rejectUnauthorized: false,
+        },
       });
 
       const email = {
@@ -319,21 +242,21 @@ router.post("/forgot", (req, res) => {
         text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n'
         'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
         'https://nycbasic.github.io/mini-auth/#/reset/${token}\n\n'
-        'If you did not request this, please ignore this email and your password will remain unchanged.\n`
+        'If you did not request this, please ignore this email and your password will remain unchanged.\n`,
       };
 
-      transporter.sendMail(email, err => {
+      transporter.sendMail(email, (err) => {
         if (err) {
           console.log(err);
         }
         return done(
           err,
           res.status(200).json({
-            msg: `Email has been sent to ${user.email} for your password reset`
+            msg: `Email has been sent to ${user.email} for your password reset`,
           })
         );
       });
-    }
+    },
   ]);
 });
 
@@ -345,9 +268,9 @@ router.get("/reset/:token", (req, res) => {
   let errors = {};
   Users.findOne({
     resetPasswordToken: req.params.token,
-    resetPasswordExpires: { $gt: Date.now() }
+    resetPasswordExpires: { $gt: Date.now() },
   })
-    .then(user => {
+    .then((user) => {
       if (!user) {
         errors.msg = "Password reset token is invalid or has expired.";
         errors.expiredToken = true;
@@ -356,7 +279,7 @@ router.get("/reset/:token", (req, res) => {
         res.status(200).json({ validToken: true });
       }
     })
-    .catch(err => {
+    .catch((err) => {
       throw err;
     });
 });
@@ -372,12 +295,12 @@ router.post("/reset/:token", (req, res) => {
     return res.status(400).json(errors);
   }
   async.waterfall([
-    done => {
+    (done) => {
       Users.findOne({
         resetPasswordToken: req.params.token,
-        resetPasswordExpires: { $gt: Date.now() }
-      }).then(user => {
-        const passwordExist = user.password.previous.some(value => {
+        resetPasswordExpires: { $gt: Date.now() },
+      }).then((user) => {
+        const passwordExist = user.password.previous.some((value) => {
           return bcrypt.compareSync(password, value);
         });
 
@@ -402,7 +325,7 @@ router.post("/reset/:token", (req, res) => {
               user.resetPasswordToken = undefined;
               user.resetPasswordExpires = undefined;
               user.password.resetted = undefined;
-              user.save(err => {
+              user.save((err) => {
                 done(err, user);
               });
             });
@@ -415,8 +338,8 @@ router.post("/reset/:token", (req, res) => {
         service: process.env.MAIL_SERVICE,
         auth: {
           user: process.env.MAIL_USERNAME,
-          pass: process.env.MAIL_PASSWORD
-        }
+          pass: process.env.MAIL_PASSWORD,
+        },
       });
       const email = {
         to: user.email,
@@ -426,27 +349,27 @@ router.post("/reset/:token", (req, res) => {
           "Hello,\n\n" +
           "This is a confirmation that the password for your account " +
           user.email +
-          " has just been changed.\n"
+          " has just been changed.\n",
       };
-      transport.sendMail(email, err => {
+      transport.sendMail(email, (err) => {
         errors.msg = "Success! Your password has been changed.";
         res.status(200).json(errors);
         done(err);
       });
-    }
+    },
   ]);
 });
 
 router.delete("/:id", auth, (req, res) => {
-  Users.findOne({ _id: req.params.id }).then(user => {
+  Users.findOne({ _id: req.params.id }).then((user) => {
     if (!user) {
       res.status(400).json({
-        msg: "User not found!"
+        msg: "User not found!",
       });
     }
     user.remove();
     res.status(200).json({
-      msg: "You have been removed!"
+      msg: "You have been removed!",
     });
   });
 });
@@ -454,7 +377,7 @@ router.delete("/:id", auth, (req, res) => {
 router.get("/status", auth, (req, res) => {
   if (req.user) {
     return res.status(200).json({
-      success: true
+      success: true,
     });
   }
 });
