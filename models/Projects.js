@@ -1,43 +1,43 @@
 const mongoose = require("mongoose"),
   Schema = mongoose.Schema;
 
-const todoSchema = new Schema({
+const projectsSchema = new Schema({
   user: {
     type: Schema.Types.ObjectId,
-    ref: "User"
+    ref: "Users",
   },
   projects: [
     {
       name: {
         type: String,
-        required: true
+        required: true,
       },
       todos: [
         {
           title: {
-            type: String
+            type: String,
           },
           text: {
-            type: String
+            type: String,
           },
           completed: {
-            type: Boolean
+            type: Boolean,
           },
           date: {
             type: Date,
-            default: Date.now
-          }
-        }
+            default: Date.now,
+          },
+        },
       ],
       date: {
         type: Date,
-        default: Date.now
+        default: Date.now,
       },
       completed: {
-        type: Boolean
-      }
-    }
-  ]
+        type: Boolean,
+      },
+    },
+  ],
 });
 
-module.exports = mongoose.model("Todo", todoSchema);
+module.exports = mongoose.model("Projects", projectsSchema);

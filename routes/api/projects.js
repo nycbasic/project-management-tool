@@ -4,14 +4,19 @@ const express = require("express"),
 
 // Helper function & Todo Model Schema
 const findItem = require("../../helpers/index-value");
-const Todo = require("../../models/Todos");
-const { home, getAllProjects } = require("../../helpers/projects");
+const Todo = require("../../models/Projects");
+const {
+  home,
+  getAllProjects,
+  createProject,
+  updateProjectName,
+} = require("../../helpers/projects");
 
 // Validation Inputs
 const {
   validateProjectNameInput,
   validateTodoInputs,
-} = require("../../validation/todos");
+} = require("../../validation/projects");
 
 // Validation check for URL parameters
 const validateRandomAlerts = require("../../validation/random");
@@ -21,103 +26,29 @@ const auth = passport.authenticate("jwt", { session: false });
 
 // Route: GET /
 // Desc: A route to check if the api is working
-// Access: Public
+// Access: PUBLIC
 router.get("/", home);
 
 // Route: GET /all
 // Desc: Loads all projects in database
-// Access: Private
+// Access: PRVIATE
 router.get("/all", auth, getAllProjects);
 
 /* Project REST API - Start */
 
 // Route: POST /project
 // Desc: Creates a new project
-// Access: Private
-router.post("/project", auth, (req, res) => {
-  const { isValid, errors } = validateProjectNameInput(req.body);
-  const { name } = req.body;
-  const { id } = req.user;
-  Todo.findOne({ user: id })
-    .then((user) => {
-      if (!isValid) {
-        return res.status(400).json(errors);
-      }
-
-      if (!user) {
-        const newProject = new Todo({
-          user: id,
-          projects: [
-            {
-              name,
-              todos: [],
-            },
-          ],
-          completed: false,
-        });
-        newProject.save().then((projects) => {
-          return res.json(projects);
-        });
-      } else {
-        const newProject = {
-          name,
-          todos: [],
-          completed: false,
-        };
-
-        user.projects.push(newProject);
-        user.save().then((user) => {
-          return res.status(200).json(user.projects);
-        });
-      }
-    })
-    .catch((err) => {
-      if (err) {
-        return res.status(400).json({ error: "Something went wrong!" });
-      }
-    });
-});
+// Access: PRVIATE
+router.post("/project", auth, createProject);
 
 // Route: PUT /project/:id of project
 // Desc: Updates the name of the project
-// Access: Private
-router.put("/project/:project_id", auth, (req, res) => {
-  Todo.findOne({ user: req.user.id })
-    .then((user) => {
-      const { projects } = user;
-      const { project_id } = req.params;
-      const { current_item, current_index } = findItem(
-        projects,
-        project_id,
-        "_id"
-      );
-      const { isValid, errors } = validateProjectNameInput(req.body);
-      const { noAlert, alert } = validateRandomAlerts(current_item);
-
-      if (!isValid) {
-        return res.status(400).json(errors);
-      }
-
-      if (!noAlert) {
-        return res.status(400).json(alert);
-      }
-
-      current_item.name = req.body.name;
-      current_item.date = Date.now();
-      user.save().then(() => {
-        return res.status(200).json(projects[current_index]);
-      });
-    })
-    .catch((err) => {
-      if (err) {
-        return res.status(400).json({ error: "Something went wrong!" });
-      }
-    });
-});
+// Access: PRVIATE
+router.put("/project/:project_id", auth, updateProjectName);
 
 // Route: PUT /project/completed/:id of project
 // Desc: Updates whether the project was completed
-// Access: Private
+// Access: PRIVATE
 router.put("/project/completed/:project_id", auth, (req, res) => {
   Todo.findOne({ user: req.user.id })
     .then((user) => {

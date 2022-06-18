@@ -22,7 +22,7 @@ mongoose
 
 // API Routes
 const Users = require("./routes/api/users");
-const Todos = require("./routes/api/todos");
+const Projects = require("./routes/api/projects");
 
 // Passport - Middleware Authentication
 app.use(passport.initialize());
@@ -34,7 +34,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // End Points
-app.use("/api/projects", Todos);
+app.use("/api/projects", Projects);
 app.use("/api/users", Users);
 
 app.listen(PORT, () => {

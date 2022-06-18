@@ -4,36 +4,36 @@ const mongoose = require("mongoose"),
 const userSchema = new Schema({
   fullName: {
     type: String,
-    required: true
+    required: true,
   },
   email: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
   },
   password: {
     current: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
     },
     previous: [],
     count: { type: Number },
     resetted: { type: Boolean },
     status: {
       type: Boolean,
-      required: true
-    }
+      required: true,
+    },
   },
   avatar: {
-    type: String
+    type: String,
   },
   resetPasswordToken: String,
   resetPasswordExpires: Date,
   date: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("Users", userSchema);
