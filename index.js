@@ -23,6 +23,7 @@ mongoose
 // API Routes
 const Users = require("./routes/api/users");
 const Projects = require("./routes/api/projects");
+const Tasks = require("./routes/api/tasks");
 
 // Passport - Middleware Authentication
 app.use(passport.initialize());
@@ -35,10 +36,9 @@ app.use(cors());
 
 // End Points
 app.use("/api/projects", Projects);
+app.use("/api/projects/tasks", Tasks);
 app.use("/api/users", Users);
 
 app.listen(PORT, () => {
   console.log(`Server running on: ${PORT}`);
 });
-
-

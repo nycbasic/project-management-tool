@@ -15,11 +15,11 @@ exports.validateProjectNameInput = function validateProjectNameInput(data) {
 
   return {
     errors,
-    isValid: isEmpty(errors)
+    isValid: isEmpty(errors),
   };
 };
 
-exports.validateTodoInputs = function validateTodoInputs(data) {
+exports.validateTaskInputs = function validateTaskInputs(data) {
   let errors = {};
   let { title, text } = data;
 
@@ -40,6 +40,6 @@ exports.validateTodoInputs = function validateTodoInputs(data) {
 
   return {
     errors,
-    isValid: isEmpty(errors)
+    isValid: isEmpty(errors),
   };
 };

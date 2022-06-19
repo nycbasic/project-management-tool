@@ -12,7 +12,7 @@ const projectsSchema = new Schema({
         type: String,
         required: true,
       },
-      todos: [
+      tasks: [
         {
           title: {
             type: String,

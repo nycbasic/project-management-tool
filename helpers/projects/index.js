@@ -132,6 +132,7 @@ const projectCompleted = (req, res) => {
       }
       current_item.completed = !current_item.completed;
       user.save().then(() => {
+        console.log("Marked project as completed!");
         return res.status(200).json(projects[current_index]);
       });
     })
@@ -163,7 +164,35 @@ const deleteProject = (req, res) => {
       user.save().then(() => {
         return res
           .status(200)
-          .json(projects.length < 1 ? { msg: "No data to display" } : projects);
+          .json(projects.length < 1 ? { msg: "project deleted" } : projects);
+      });
+    })
+    .catch((err) => {
+      if (err) {
+        return res.status(400).json({ error: "Something went wrong!" });
+      }
+    });
+};
+
+const deleteAllProjects = (req, res) => {
+  const { id } = req.user;
+  Projects.findOne({ user: id })
+    .then((user) => {
+      const { projects } = user;
+      const { noAlert, alert } = validateRandomAlerts(projects);
+      if (!noAlert) {
+        return res.status(400).json(alert);
+      }
+      user.projects = [];
+      user.save().then((user) => {
+        const { projects } = user;
+        return res
+          .status(200)
+          .json(
+            projects.length < 1
+              ? { msg: "all projects has been removed" }
+              : projects
+          );
       });
     })
     .catch((err) => {
@@ -179,5 +208,6 @@ module.exports = {
   createProject,
   updateProjectName,
   projectCompleted,
-  deleteProject
+  deleteProject,
+  deleteAllProjects,
 };
