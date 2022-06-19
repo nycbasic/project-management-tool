@@ -16,6 +16,11 @@ const getAllProjects = (req, res) => {
   if (user) {
     Projects.findOne({ user: user.id })
       .then((user) => {
+        // Checks if the user has projects
+        if (!user) {
+          return res.status(500).json({ msg: "No projects found!" });
+        }
+        // Run if user projects are found
         const { projects } = user;
         const { alert, noAlert } = validateRandomAlerts(projects);
         if (!noAlert) {
@@ -110,4 +115,37 @@ const updateProjectName = (req, res) => {
     });
 };
 
-module.exports = { home, getAllProjects, createProject, updateProjectName };
+const projectCompleted = (req, res) => {
+  Todo.findOne({ user: req.user.id })
+    .then((user) => {
+      const { projects } = user;
+      const { project_id } = req.params;
+      const { current_item, current_index } = findItem(
+        projects,
+        project_id,
+        "_id"
+      );
+      const { noAlert, alert } = validateRandomAlerts(current_item);
+
+      if (!noAlert) {
+        return res.status(400).json(alert);
+      }
+      current_item.completed = !current_item.completed;
+      user.save().then(() => {
+        return res.status(200).json(projects[current_index]);
+      });
+    })
+    .catch((err) => {
+      if (err) {
+        return res.status(400).json({ error: "Something went wrong!" });
+      }
+    });
+};
+
+module.exports = {
+  home,
+  getAllProjects,
+  createProject,
+  updateProjectName,
+  projectCompleted,
+};

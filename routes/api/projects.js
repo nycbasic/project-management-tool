@@ -10,6 +10,7 @@ const {
   getAllProjects,
   createProject,
   updateProjectName,
+  projectCompleted
 } = require("../../helpers/projects");
 
 // Validation Inputs
@@ -39,7 +40,7 @@ router.get("/all", auth, getAllProjects);
 // Route: POST /project
 // Desc: Creates a new project
 // Access: PRVIATE
-router.post("/project", auth, createProject);
+router.post("/new", auth, createProject);
 
 // Route: PUT /project/:id of project
 // Desc: Updates the name of the project
@@ -49,32 +50,7 @@ router.put("/project/:project_id", auth, updateProjectName);
 // Route: PUT /project/completed/:id of project
 // Desc: Updates whether the project was completed
 // Access: PRIVATE
-router.put("/project/completed/:project_id", auth, (req, res) => {
-  Todo.findOne({ user: req.user.id })
-    .then((user) => {
-      const { projects } = user;
-      const { project_id } = req.params;
-      const { current_item, current_index } = findItem(
-        projects,
-        project_id,
-        "_id"
-      );
-      const { noAlert, alert } = validateRandomAlerts(current_item);
-
-      if (!noAlert) {
-        return res.status(400).json(alert);
-      }
-      current_item.completed = !current_item.completed;
-      user.save().then(() => {
-        return res.status(200).json(projects[current_index]);
-      });
-    })
-    .catch((err) => {
-      if (err) {
-        return res.status(400).json({ error: "Something went wrong!" });
-      }
-    });
-});
+router.put("/project/completed/:project_id", auth, projectCompleted);
 
 // Route: DELETE /project/:id of project
 // Desc: Deletes a project
