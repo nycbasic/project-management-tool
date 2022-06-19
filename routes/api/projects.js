@@ -10,7 +10,8 @@ const {
   getAllProjects,
   createProject,
   updateProjectName,
-  projectCompleted
+  projectCompleted,
+  deleteProject,
 } = require("../../helpers/projects");
 
 // Validation Inputs
@@ -45,46 +46,17 @@ router.post("/new", auth, createProject);
 // Route: PUT /project/:id of project
 // Desc: Updates the name of the project
 // Access: PRVIATE
-router.put("/project/:project_id", auth, updateProjectName);
+router.patch("/project/:project_id", auth, updateProjectName);
 
 // Route: PUT /project/completed/:id of project
 // Desc: Updates whether the project was completed
 // Access: PRIVATE
-router.put("/project/completed/:project_id", auth, projectCompleted);
+router.patch("/project/completed/:project_id", auth, projectCompleted);
 
 // Route: DELETE /project/:id of project
 // Desc: Deletes a project
 // Access: Private
-router.delete("/project/:project_id", auth, (req, res) => {
-  const { id } = req.user;
-  Todo.findOne({ user: id })
-    .then((user) => {
-      const { projects } = user;
-      const { project_id } = req.params;
-      const { current_item, current_index } = findItem(
-        projects,
-        project_id,
-        "_id"
-      );
-
-      const { noAlert, alert } = validateRandomAlerts(current_item);
-
-      if (!noAlert) {
-        return res.status(400).json(alert);
-      }
-      projects.splice(current_index, 1);
-      user.save().then(() => {
-        return res
-          .status(200)
-          .json(projects.length < 1 ? { msg: "No data to display" } : projects);
-      });
-    })
-    .catch((err) => {
-      if (err) {
-        return res.status(400).json({ error: "Something went wrong!" });
-      }
-    });
-});
+router.delete("/project/:project_id", auth, deleteProject);
 
 // Route: DELETE /project
 // Desc: Deletes all projects

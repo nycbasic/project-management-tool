@@ -116,7 +116,7 @@ const updateProjectName = (req, res) => {
 };
 
 const projectCompleted = (req, res) => {
-  Todo.findOne({ user: req.user.id })
+  Projects.findOne({ user: req.user.id })
     .then((user) => {
       const { projects } = user;
       const { project_id } = req.params;
@@ -142,10 +142,42 @@ const projectCompleted = (req, res) => {
     });
 };
 
+const deleteProject = (req, res) => {
+  const { id } = req.user;
+  Projects.findOne({ user: id })
+    .then((user) => {
+      const { projects } = user;
+      const { project_id } = req.params;
+      const { current_item, current_index } = findItem(
+        projects,
+        project_id,
+        "_id"
+      );
+
+      const { noAlert, alert } = validateRandomAlerts(current_item);
+
+      if (!noAlert) {
+        return res.status(400).json(alert);
+      }
+      projects.splice(current_index, 1);
+      user.save().then(() => {
+        return res
+          .status(200)
+          .json(projects.length < 1 ? { msg: "No data to display" } : projects);
+      });
+    })
+    .catch((err) => {
+      if (err) {
+        return res.status(400).json({ error: "Something went wrong!" });
+      }
+    });
+};
+
 module.exports = {
   home,
   getAllProjects,
   createProject,
   updateProjectName,
   projectCompleted,
+  deleteProject
 };
