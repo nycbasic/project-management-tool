@@ -39,14 +39,9 @@ const signUp = (req, res) => {
     return res.status(400).json(errors);
   }
 
-  console.log("FROM SignUp Function ", email);
-
   // MongoDB Database Query: findOne
   Users.findOne({ email }).then((user) => {
-    console.log("MONGOOSE FIND USER!", user);
-
     if (!user) {
-      console.log("USER DOES NOT EXIST LOGIC");
       // Reset passwordfail count;
       passwordfailCount = 0;
       // Salt + hash password and sets the user up to be saved in the database
