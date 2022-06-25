@@ -33,31 +33,29 @@ const home = (req, res) => {
 const signUp = (req, res) => {
   // Validation Check
   const { errors, isValid } = validateSignUpInput(req.body);
+  const { fullName, password, password2, email } = req.body;
 
   if (!isValid) {
     return res.status(400).json(errors);
   }
 
-  // MongoDB Database Query: findOne
-  Users.findOne({ email: req.body.email }).then((user) => {
-    if (!user) {
-      const { fullName, email, password } = req.body;
-      const avatar = gravatar.url(email, {
-        size: "200",
-        rating: "pg",
-        default: "mm",
-      });
+  console.log("FROM SignUp Function ", email);
 
+  // MongoDB Database Query: findOne
+  Users.findOne({ email }).then((user) => {
+    console.log("MONGOOSE FIND USER!", user);
+
+    if (!user) {
+      console.log("USER DOES NOT EXIST LOGIC");
       // Reset passwordfail count;
       passwordfailCount = 0;
       // Salt + hash password and sets the user up to be saved in the database
-      const newUser = userSignUpSetup();
+      const newUser = userSignUpSetup({ fullName, password, password2, email });
       // Saves the user credentials in the database
       newUser
         .save()
         .then((user) => {
           const { id, fullName, avatar } = user;
-
           const payload = {
             id,
             fullName,
@@ -82,7 +80,7 @@ const signUp = (req, res) => {
         })
         .catch((err) => {
           console.log(err);
-          return res.json(err.respones.data);
+          return res.json(err);
         });
     } else {
       // Take a look at this

@@ -39,6 +39,7 @@ exports.validateSignUpInput = function validateSignUpInput(data) {
     errors.password2 = "Password does not match!";
     errors.password = "Password does not match!";
   }
+  
   if (validator.isEmpty(password2)) {
     errors.password2 = "Please confirm your password!";
   }

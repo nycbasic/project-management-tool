@@ -21,14 +21,14 @@ router.patch("/:project_id/:task_id", auth, updateTask);
 // Route: PUT /todo/completed/:id of project/:id of todo
 // Desc: Update whether the task was completed
 // Access: Private
-router.put("/todo/completed/:project_id/:todo_id", auth, (req, res) => {
-  Todo.findOne({ user: req.user.id })
+router.put("/task/completed/:project_id/:task_id", auth, (req, res) => {
+  Tasks.findOne({ user: req.user.id })
     .then((user) => {
       const { projects } = user;
-      const { project_id, todo_id } = req.params;
+      const { project_id, task_id } = req.params;
       const { current_item, first_index, second_index } = findItem(
         projects,
-        { first: project_id, second: todo_id },
+        { first: project_id, second: task_id },
         "_id"
       );
 
@@ -40,7 +40,7 @@ router.put("/todo/completed/:project_id/:todo_id", auth, (req, res) => {
 
       current_item.completed = !current_item.completed;
       user.save().then(() => {
-        return res.status(200).json(projects[first_index].todos[second_index]);
+        return res.status(200).json(projects[first_index].tasks[second_index]);
       });
     })
     .catch((err) => {
