@@ -10,7 +10,7 @@ const {
   projectCompleted,
   deleteProject,
   deleteAllProjects,
-} = require("../../helpers/projects");
+} = require("../../helpers/api/projects");
 
 // Middleware Authentication
 const auth = passport.authenticate("jwt", { session: false });

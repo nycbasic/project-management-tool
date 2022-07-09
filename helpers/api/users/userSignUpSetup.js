@@ -1,8 +1,9 @@
 const bcrypt = require("bcryptjs"),
+  jwt = require("jsonwebtoken"),
   gravatar = require("gravatar");
 
 // Users Model
-const Users = require("../../models/Users");
+const Users = require("../../../models/Users");
 
 const userSignUpSetup = (data) => {
   const { fullName, email, password } = data;
@@ -30,4 +31,14 @@ const userSignUpSetup = (data) => {
   return newUser;
 };
 
-module.exports = userSignUpSetup;
+const createJWT = (payload, secret) => {
+  jwt.sign(payload, secret, { expires: 3600 }, (err, token) => {
+    if (err) {
+      console.log("FROM CREATEJWT ERROR HANDLER")
+      return err;
+    }
+    return token;
+  });
+};
+
+module.exports = { userSignUpSetup, createJWT };

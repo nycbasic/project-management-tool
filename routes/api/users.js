@@ -2,7 +2,6 @@ const express = require("express"),
   router = express.Router(),
   passport = require("passport");
 
-
 // Users Helper Functions for routes
 const {
   home,
@@ -13,7 +12,7 @@ const {
   resetPassword,
   deleteUser,
   checkUserStatus,
-} = require("../../helpers/users");
+} = require("../../helpers/api/users");
 
 // JWT Passport Middleware - Token Authentication/Validation
 const auth = passport.authenticate("jwt", { session: false });

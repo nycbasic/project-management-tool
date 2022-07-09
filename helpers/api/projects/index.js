@@ -1,15 +1,19 @@
-const Projects = require("../../models/Projects");
+const Projects = require("../../../models/Projects");
 
-const validateRandomAlerts = require("../../validation/random");
-const { validateProjectNameInput } = require("../../validation/projects");
+const validateRandomAlerts = require("../../../validation/random");
+const { validateProjectNameInput } = require("../../../validation/projects");
 
-const findItem = require("../../helpers/index-value");
+const findItem = require("../../../helpers/index-value");
+
+
 
 const home = (req, res) => {
   return res.status(200).json({
     msg: "Connected to Projects API!",
   });
 };
+
+
 
 const getAllProjects = (req, res) => {
   const { user } = req;

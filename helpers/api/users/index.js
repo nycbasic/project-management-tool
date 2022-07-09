@@ -1,15 +1,14 @@
 const bcrypt = require("bcryptjs"),
-  gravatar = require("gravatar"),
   jwt = require("jsonwebtoken"),
   async = require("async"),
   nodemailer = require("nodemailer"),
   crypto = require("crypto");
 
 // Hashing + Salt
-const userSignUpSetup = require("./userSignUpSetup");
+const { userSignUpSetup, createJWT } = require("./userSignUpSetup");
 
 // Users Model
-const Users = require("../../models/Users");
+const Users = require("../../../models/Users");
 
 // Validation
 const {
@@ -17,7 +16,7 @@ const {
   validateLoginInput,
   validateResetInput,
   validatePasswordResetInput,
-} = require("../../validation/auth");
+} = require("../../../validation/users");
 
 // Password fail counter
 let passwordfailCount = 0;
@@ -25,7 +24,7 @@ let passwordfailCount = 0;
 // Route: GET /api/users
 const home = (req, res) => {
   return res.json({
-    message: "Connected to Authentication API!",
+    message: "User Authentication API!",
   });
 };
 
@@ -58,24 +57,17 @@ const signUp = (req, res) => {
           };
 
           // Creates a signed JWT token & payload, sends it back to the client.
-          jwt.sign(
-            payload,
-            process.env.SECRET,
-            { expiresIn: 3600 },
-            (err, token) => {
-              if (err) {
-                return res.status(400).send(err.response.data);
-              }
-              return res.json({
-                token: `Bearer ${token}`,
-                status: 200,
-              });
-            }
-          );
+          const token = createJWT(payload, process.env.SECRET);
+          if (token) {
+            return res.json({
+              token: `Bearer ${token}`,
+              status: 200,
+            });
+          }
+          return token;
         })
         .catch((err) => {
-          console.log(err);
-          return res.json(err);
+          return res.status(500).json(err);
         });
     } else {
       // Take a look at this

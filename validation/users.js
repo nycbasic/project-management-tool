@@ -1,7 +1,7 @@
 const validator = require("validator"),
   isEmpty = require("../helpers/is-empty");
 
-exports.validateSignUpInput = function validateSignUpInput(data) {
+const validateSignUpInput = (data) => {
   let errors = {};
   let { fullName, email, password, password2 } = data;
 
@@ -39,18 +39,18 @@ exports.validateSignUpInput = function validateSignUpInput(data) {
     errors.password2 = "Password does not match!";
     errors.password = "Password does not match!";
   }
-  
+
   if (validator.isEmpty(password2)) {
     errors.password2 = "Please confirm your password!";
   }
 
   return {
     errors,
-    isValid: isEmpty(errors)
+    isValid: isEmpty(errors),
   };
 };
 
-exports.validateLoginInput = function validateLoginInput(data) {
+const validateLoginInput = (data) => {
   let errors = {};
   let { email, password } = data;
 
@@ -72,11 +72,11 @@ exports.validateLoginInput = function validateLoginInput(data) {
 
   return {
     errors,
-    isValid: isEmpty(errors)
+    isValid: isEmpty(errors),
   };
 };
 
-exports.validateResetInput = function validateResetInput(data) {
+const validateResetInput = (data) => {
   let errors = {};
   let { email } = data;
 
@@ -91,11 +91,11 @@ exports.validateResetInput = function validateResetInput(data) {
 
   return {
     errors,
-    isValid: isEmpty(errors)
+    isValid: isEmpty(errors),
   };
 };
 
-exports.validatePasswordResetInput = function validatePasswordResetInput(data) {
+const validatePasswordResetInput = (data) => {
   let errors = {};
   let { password, password2 } = data;
 
@@ -124,6 +124,13 @@ exports.validatePasswordResetInput = function validatePasswordResetInput(data) {
 
   return {
     errors,
-    isValid: isEmpty(errors)
+    isValid: isEmpty(errors),
   };
+};
+
+module.exports = {
+  validateSignUpInput,
+  validateLoginInput,
+  validateResetInput,
+  validatePasswordResetInput,
 };
